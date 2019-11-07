@@ -48,6 +48,77 @@ function getGames(samplecount){
     .write();
 }
 
+function lastGameNumber() {
+    b = db.get('games')
+    .find()
+    .take(1)
+    .value()[0].gamenumber;
+    return b;
+}
+
+function updateGames() {
+    lastGameNumber = lastGameNumber();
+    
+    var lastHash = "";
+    
+    var gameses = [];
+    for(var i=0; i<amount; i++){
+        var game = {}
+        var gameHash = (lastHash!=""?genGameHash(lastHash):hash);
+        var gameCrash = crashPointFromHash((lastHash!=""?genGameHash(lastHash):hash));
+        game.gamenumber = gameNumber;
+        game.crash = gameCrash;
+        if (maxcrash < gameCrash ) {
+            console.log(maxcrash);
+            maxcrash = gameCrash;
+        }
+        //crashes.push(gameCrash);
+        lastHash = gameHash;
+        gameNumber--;
+        gameses.push(game);
+    }
+    console.log(maxcrash);
+    db.get('games')
+    .push(gameses)
+    .write();
+
+
+
+}
+
+
+function arrfreq(item, index, freqarr) {
+    freqarr[Math.floor(item.crash)] += 1;
+}
+
+function frequencyArr() {
+    freqarr = {};
+    a = db.get('games')
+    .find()
+    .value();
+    for(i = 0; i < a.length; i++) {
+        console.log(a[i].crash)
+    }
+    return a;
+}
+
+
+function GetNumMultsAbove(mult) {
+    
+    a = db.get('games')
+    .find()
+    .filter(games => games.crash > 5000)
+    .value();
+
+    b = db.get('games')
+    .find()
+    .unshift({"test" : "test"})
+    .write();
+
+    console.log(a);
+
+}
+
 
 function distanceBetween(crashmult) {
     count = 0
@@ -61,6 +132,8 @@ function distanceBetween(crashmult) {
     }
 
 }
+
+
 
 function highestMult() {
     highestMult = 0;
@@ -131,7 +204,10 @@ function crashPointFromHash(serverSeed) {
     return (Math.floor((100 * e - h) / (e - h))/100).toFixed(2);
 };
 
-getGames(1000000);
+frequencyArr();
+//GetNumMultsAbove(10);
+
+//getGames(1000000);
 
 
 //averageDistanceBetween(1000);
