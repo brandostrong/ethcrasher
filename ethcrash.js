@@ -12,7 +12,7 @@ db.defaults({ games: []})
 
 
 crashes = [];
-var hash = "728a08f46db8c7499635fae5dacce168240fb7acc289c276c7f675f8d2ded00e";
+var hash = "e9518a332483fcf68b375ffb2d3b4e6b87b05fd94d9709ef8a64c01e2a34cf49";
 var gameNumber = 1496357;
 
 function getGameFromNumber(gamenumber) {
@@ -20,6 +20,63 @@ function getGameFromNumber(gamenumber) {
     var gameHash = (lastHash!=""?genGameHash(lastHash):hash);
     var gameCrash = crashPointFromHash((lastHash!=""?genGameHash(lastHash):hash));
 }
+
+function getGamesFromDB(samplecount) {
+    b = db.get('games')
+    .find()
+    .take(samplecount)
+    .value();
+    return b;
+}
+
+
+
+function simulateGame(samplecount, startbalance, betamount, crashmult, multwin, multloss) {
+    profit = 0;
+    balance = startbalance;
+    lastwon = true;
+    multbet = betamount;
+    streak = 0;
+    games = getGamesFromDB(samplecount);
+    console.log(games[0].crash);
+    for(i = games.length; i > 0; i--) {
+        profit = 0;
+        // if(multloss == 1 && lastwon == false) {
+        //     multbet = betamount;
+        // } else {
+        //     if(multloss > 1 && lastwon == true) {
+        //         multbet = betamount * multloss;
+        //     }
+        // }
+
+        crashed = games[i-1].crash;
+        console.log("betted: " + multbet + " at: " + crashmult + " game crashed at: " + crashed);
+        if(crashed >= crashmult) {
+            profit = (multbet * crashmult) - multbet;
+            balance += (multbet * crashmult) - multbet;
+            if(multwin > 1) {
+                multbet = multbet * multwin;
+            }
+            if(multwin == 1) {
+                multbet = betamount;
+            }
+        } else {
+            profit -= multbet;
+            balance -= multbet;
+            if(multloss > 1) {
+                multbet = multbet * multloss;
+            }
+            if(multloss == 1) {
+                multbet = betamount;
+            }
+        }
+        console.log("profited: " + profit);
+    }
+    console.log(balance);
+}
+
+
+
 
 
 function getGames(samplecount){
@@ -204,7 +261,11 @@ function crashPointFromHash(serverSeed) {
     return (Math.floor((100 * e - h) / (e - h))/100).toFixed(2);
 };
 
-frequencyArr();
+
+//getGames(5000);
+simulateGame(4500, 0, 100, 3, 1, 1.6);
+
+//frequencyArr();
 //GetNumMultsAbove(10);
 
 //getGames(1000000);
