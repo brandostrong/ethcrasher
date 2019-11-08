@@ -30,8 +30,7 @@ function getGamesFromDB(samplecount) {
 }
 
 
-
-function simulateGame(samplecount, startbalance, betamount, crashmult, multwin, multloss) {
+function simulateGame(samplecount, startbalance, betamount, crashmult, multwin, multloss, stopbetval) {
     profit = 0;
     balance = startbalance;
     lastwon = true;
@@ -40,15 +39,14 @@ function simulateGame(samplecount, startbalance, betamount, crashmult, multwin, 
     games = getGamesFromDB(samplecount);
     console.log(games[0].crash);
     for(i = games.length; i > 0; i--) {
+        if(multbet >= stopbetval) {
+            multbet = betamount;
+        }
         profit = 0;
-        // if(multloss == 1 && lastwon == false) {
-        //     multbet = betamount;
-        // } else {
-        //     if(multloss > 1 && lastwon == true) {
-        //         multbet = betamount * multloss;
-        //     }
-        // }
-
+        if (multbet > balance) {
+            console.log("Bet greater than balance: " + multbet + " betted at balance: " + balance);
+            break;
+        }
         crashed = games[i-1].crash;
         console.log("betted: " + multbet + " at: " + crashmult + " game crashed at: " + crashed);
         if(crashed >= crashmult) {
@@ -70,9 +68,11 @@ function simulateGame(samplecount, startbalance, betamount, crashmult, multwin, 
                 multbet = betamount;
             }
         }
-        console.log("profited: " + profit);
+        console.log("profited: " + profit + " balance: " + balance);
     }
     console.log(balance);
+    netprofit = balance - startbalance;
+    console.log("net profit: " + netprofit);
 }
 
 
@@ -263,7 +263,7 @@ function crashPointFromHash(serverSeed) {
 
 
 //getGames(5000);
-simulateGame(4500, 0, 100, 3, 1, 1.6);
+simulateGame(4500, 100000, 100, 3, 1, 1.6, 45000);
 
 //frequencyArr();
 //GetNumMultsAbove(10);
